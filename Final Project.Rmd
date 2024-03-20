@@ -1,0 +1,67 @@
+---
+title: "Untitled"
+author: "Saul Hernandez"
+date: '2022-05-03'
+output:  
+  html_document: default
+---
+
+
+```{r}
+r_n = c("having_IP_Address", "URL_Length", "Shortining_Service", "having_At_Symbol", "double_slash_redirecting", "Prefix_Suffix", "having_Sub_Domain", "SSLfinal_State", "Domain_registeration_length", "Favicon","port", "HTTPS_token", "Request_URL", "URL_of_Anchor", "Links_in_tags", "SFH", "Submitting_to_email", "Abnormal_URL", "Redirect", "on_mouseover", "RightClick", "popUpWidnow", "Iframe", "age_of_domain", "DNSRecord", "web_traffic", "Page_Rank", "Google_Index", "Links_pointing_to_page", "Statistical_report", "Result")
+
+Training.Dataset <- read.csv("Training Dataset.arff", col.names = r_n, comment.char="@")
+
+summary(Training.Dataset)
+```
+
+
+```{r}
+Training.Dataset[Training.Dataset == "1"] <- 1
+Training.Dataset[Training.Dataset == "0"] <- .5
+Training.Dataset[Training.Dataset == "-1"] <- 0
+summary(Training.Dataset)
+```
+
+
+```{r}
+sample <- sample(c(TRUE, FALSE), nrow(Training.Dataset), replace=TRUE, prob=c(0.7,0.3))
+train <- Training.Dataset[sample, ]
+test <- Training.Dataset[!sample, ]
+#fit logistic regression model
+model <- glm(Result ~ ., family="binomial", data=train)
+summary(model)
+```
+
+
+```{r}
+#disable scientific notation for model summary
+options(scipen=999)
+
+#view model summary
+summary(model)
+```
+
+
+```{r}
+model2 <- glm(Result ~ . -double_slash_redirecting -Prefix_Suffix -Domain_registeration_length -Abnormal_URL -on_mouseover -RightClick -popUpWidnow -Iframe -age_of_domain, family="binomial", data=train)
+summary(model2)
+```
+
+
+```{r}
+model3 <- glm(Result ~ . -double_slash_redirecting -Prefix_Suffix -Domain_registeration_length -Abnormal_URL -on_mouseover -RightClick -popUpWidnow -Iframe -age_of_domain -URL_Length -Page_Rank, family="binomial", data=train)
+summary(model3)
+plot(model3)
+```
+
+```{r}
+predout <- predict.glm(object = model3, newdata = test, type = "response")
+true <- test$Result
+
+df <- data.frame(prediction = c(round(predout, 0)), observed = c(test$Result))
+df$TF <- c(df$prediction == df$observed)
+summary(df$TF)
+```
+
+
